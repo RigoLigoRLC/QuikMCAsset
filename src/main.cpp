@@ -15,14 +15,23 @@ using rapidjson::Value;
 #define TEST_SUPPLY_FILE_PATH
 
 int restoreHierachy(string&, string&);
+int processFile(string&, string&, string&);
+int createDirectory(string&);
+
+string lastFileDirectory;
 
 int main()
 {
   string jsonFilePath, outputFolderPath;
   
 # ifdef TEST_SUPPLY_FILE_PATH
-  jsonFilePath = "/home/rigoligo/.local/share/multimc/assets/indexes/1.16.json";
-  outputFolderPath = "/run/media/rigoligo/storage/ASSETS/";
+#		ifdef WIN32
+			jsonFilePath = "E:/MultiMC/assets/indexes/1.15.json";
+			outputFolderPath = "E:/!BKUP/ASSETS";
+#		else
+			jsonFilePath = "/home/rigoligo/.local/share/multimc/assets/indexes/1.16.json";
+			outputFolderPath = "/run/media/rigoligo/storage/ASSETS/";
+# endif
 # else
   cout << "请输入assets/indexes/版本号.json的绝对路径：";
   cin.getline(jsonFilePath);
@@ -50,7 +59,8 @@ int restoreHierachy(string &jsonPath, string &outputPath)
   if(parsedDoc.HasParseError())
   {
     cout << "\tError when parsing file \"" << jsonPath << "\":\n"
-          << "\tError code " << parsedDoc.GetParseError() << " at offset " << parsedDoc.GetErrorOffset() << ".\n";
+         << "\tError code " << parsedDoc.GetParseError() << " at offset "
+				 << parsedDoc.GetErrorOffset() << ".\n";
     throw "Cannot parse JSON.";
   }
   
@@ -77,3 +87,12 @@ int restoreHierachy(string &jsonPath, string &outputPath)
   return 0;
 };
 
+int processFile(string& hash, string& filename, string& fullDestination)
+{
+
+}
+
+int createDirectory(string& fullPath)
+{
+	
+}

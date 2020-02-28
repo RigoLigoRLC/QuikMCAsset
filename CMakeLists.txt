@@ -6,7 +6,7 @@ set(EXEC quikmcasset)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(inc)
+include_directories(inc include/)
 
 file(GLOB SOURCES src/*.cpp)
 
