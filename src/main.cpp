@@ -1,6 +1,6 @@
 #include <iostream>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <string>
+#include <cstdio>
 #include "rapidjson.hpp"
 
 using std::string;
@@ -12,11 +12,13 @@ using rapidjson::Document;
 using rapidjson::Value;
 
 
-#define TEST_SUPPLY_FILE_PATH
+//#define TEST_SUPPLY_FILE_PATH
 
-int restoreHierachy(string&, string&);
-int processFile(string&, string&, string&);
-int createDirectory(string&);
+int restoreHierachy(const string&, const string&);
+int processFile(const string&, const string&, const string&, const string&);
+int createDirectory(const string&);
+bool isDirectoryExist(const string& path);
+int copyFile(const string&, const string&);
 
 string lastFileDirectory;
 
@@ -26,30 +28,40 @@ int main()
   
 # ifdef TEST_SUPPLY_FILE_PATH
 #		ifdef WIN32
-			jsonFilePath = "E:/MultiMC/assets/indexes/1.15.json";
-			outputFolderPath = "E:/!BKUP/ASSETS";
+			jsonFilePath = "E:\\MultiMC\\assets\\indexes\\1.15.json";
+			outputFolderPath = "E:\\!BKUP\\ASSETS\\";
 #		else
-			jsonFilePath = "/home/rigoligo/.local/share/multimc/assets/indexes/1.16.json";
-			outputFolderPath = "/run/media/rigoligo/storage/ASSETS/";
-# endif
+			jsonFilePath = "/home/rigoligo/.local/share/multimc/assets/indexes/1.15.json";
+			outputFolderPath = "/mnt/iw_entertainment/ASSETS/";
+#   endif
 # else
-  cout << "请输入assets/indexes/版本号.json的绝对路径：";
-  cin.getline(jsonFilePath);
-  cout << "请输入输出目录的绝对路径：";
-  cin.getline(outputFolderPath);
+    cout << "请输入assets/indexes/版本号.json的绝对路径：";
+    getline(cin, jsonFilePath);
+    cout << "请输入输出目录的绝对路径：";
+    getline(cin, outputFolderPath);
+
+    //jsonFilePath.pop_back();
+    //outputFolderPath.pop_back();
 # endif
-  
+# ifdef _WIN32
+    if(outputFolderPath[outputFolderPath.size() - 1] != '\\')
+      outputFolderPath += '\\';
+# else
+    if(outputFolderPath[outputFolderPath.size() - 1] != '/')
+      outputFolderPath += '/';
+# endif
+
   restoreHierachy(jsonFilePath, outputFolderPath);
   
   return 0;
 }
 
-int restoreHierachy(string &jsonPath, string &outputPath)
+int restoreHierachy(const string &jsonPath, const string &outputPath)
 {
   std::FILE *parseFile = std::fopen(jsonPath.c_str(), "r");
 
-  char *readbuffer = new char[65536];
-  FileReadStream fileReader(parseFile, readbuffer, 65536);
+  char *readbuffer = new char[BUFSIZ];
+  FileReadStream fileReader(parseFile, readbuffer, BUFSIZ);
   Document parsedDoc;
   Value *objObjects;
   parsedDoc.ParseStream(fileReader);
@@ -73,26 +85,42 @@ int restoreHierachy(string &jsonPath, string &outputPath)
   else
     throw "\"objects\" not found.";
   
-  string objHash, objFilename;
+  string objHash, objFilename, assetObjectPath;
+
+  assetObjectPath = jsonPath.substr(0, jsonPath.find_last_of('/') - 7);
   
   for(auto i = objObjects->MemberBegin(); i != objObjects->MemberEnd(); i++)
   {
     objFilename = i->name.GetString();
     objHash = i->value["hash"].GetString();
-    
     cout << objHash << ": " << objFilename << endl;
+    processFile(objHash, objFilename, outputPath, assetObjectPath);
   }
   
   
+
   return 0;
 };
 
-int processFile(string& hash, string& filename, string& fullDestination)
+int processFile(const string& hash, const string& filename, const string& fullDestination,const string& assetPath)
 {
-
+  //First determine if this file is in the same directory as the last one
+  //If so then just copy, don't create directory
+# ifdef _WIN32
+    string thisDirectory = filename.substr(0, filename.find_last_of('\\') + 1);
+# else
+    string thisDirectory = filename.substr(0, filename.find_last_of('/') + 1);
+# endif
+  if(thisDirectory != lastFileDirectory)
+  {
+    if(!isDirectoryExist(fullDestination + thisDirectory))
+      createDirectory(fullDestination + thisDirectory);
+    lastFileDirectory = thisDirectory;
+  }
+# ifdef _WIN32
+    copyFile(assetPath + hash.substr(0, 2) + "\\" + hash, fullDestination + filename);
+# else
+    copyFile(assetPath + "objects/" +  hash.substr(0, 2) + "/" + hash, fullDestination + filename);
+# endif
 }
 
-int createDirectory(string& fullPath)
-{
-	
-}
