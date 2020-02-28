@@ -35,9 +35,9 @@ int main()
 			outputFolderPath = "/mnt/iw_entertainment/ASSETS/";
 #   endif
 # else
-    cout << "请输入assets/indexes/版本号.json的绝对路径：";
+    cout << "Enter the absolute path of .../assets/indexes/[GAME_VERSION].json: ";
     getline(cin, jsonFilePath);
-    cout << "请输入输出目录的绝对路径：";
+    cout << "Enter the absolute path of output directory: ";
     getline(cin, outputFolderPath);
 
     //jsonFilePath.pop_back();
