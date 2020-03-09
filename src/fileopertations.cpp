@@ -5,9 +5,12 @@
 #include <sys/stat.h>
 #ifdef _WIN32
 # include <direct.h>
+# include <io.h>
+#else
+# include <unistd.h> //read write close
+# define O_BINARY 0
 #endif
 #include <fcntl.h> //open
-#include <unistd.h> //read write close
 #include <cstdio> //BUFSIZ
 
 using std::string;
@@ -37,8 +40,8 @@ int copyFile(const string &sourcePath, const string &destinationPath)
   size_t size;
   char *buf = new char[BUFSIZ];
 
-  int sourceHandle = open(sourcePath.c_str(), 00, 0); //00 for readonly
-  int destinationHandle = open(destinationPath.c_str(), O_WRONLY | O_CREAT , 0644); //01 for writeonly
+  int sourceHandle = open(sourcePath.c_str(), O_RDONLY | O_BINARY, 0);
+  int destinationHandle = open(destinationPath.c_str(), O_WRONLY | O_CREAT | O_BINARY | O_TRUNC, 0644);
 
   while((size = read(sourceHandle, buf, BUFSIZ)) > 0)
   {

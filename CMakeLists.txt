@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(quikmcasset)
 
@@ -11,7 +11,7 @@ include_directories(inc include/)
 file(GLOB SOURCES src/*.cpp)
 
 if(CMAKE_CXX_COMPILER_ID EQUAL MSVC)
-set(CMAKE_EXE_LINKER_FLAGS /MT)
+set(CMAKE_EXE_LINKER_FLAGS /MT /INCREMENTAL)
 elseif(CMAKE_CXX_COMPILER_ID EQUAL GNU)
 set(CMAKE_EXE_LINKER_FLAGS -static)
 endif()

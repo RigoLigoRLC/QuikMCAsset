@@ -19,6 +19,7 @@ int processFile(const string&, const string&, const string&, const string&);
 int createDirectory(const string&);
 bool isDirectoryExist(const string& path);
 int copyFile(const string&, const string&);
+void findAndReplaceString(std::string& subject, const std::string& search, const std::string& replace);
 
 string lastFileDirectory;
 
@@ -28,8 +29,8 @@ int main()
   
 # ifdef TEST_SUPPLY_FILE_PATH
 #		ifdef WIN32
-			jsonFilePath = "E:\\MultiMC\\assets\\indexes\\1.15.json";
-			outputFolderPath = "E:\\!BKUP\\ASSETS\\";
+			jsonFilePath = "E:\\MultiMC\\assets\\indexes\\1.13.json";
+			outputFolderPath = "E:\\MCASSETS\\";
 #		else
 			jsonFilePath = "/home/rigoligo/.local/share/multimc/assets/indexes/1.15.json";
 			outputFolderPath = "/mnt/iw_entertainment/ASSETS/";
@@ -87,12 +88,19 @@ int restoreHierachy(const string &jsonPath, const string &outputPath)
   
   string objHash, objFilename, assetObjectPath;
 
-  assetObjectPath = jsonPath.substr(0, jsonPath.find_last_of('/') - 7);
+# ifdef WIN32
+	assetObjectPath = jsonPath.substr(0, jsonPath.find_last_of('\\') - 7);
+# else
+	assetObjectPath = jsonPath.substr(0, jsonPath.find_last_of('/') - 7);
+# endif
   
   for(auto i = objObjects->MemberBegin(); i != objObjects->MemberEnd(); i++)
   {
     objFilename = i->name.GetString();
     objHash = i->value["hash"].GetString();
+#		ifdef WIN32
+			findAndReplaceString(objFilename, "/", "\\");
+#		endif
     cout << objHash << ": " << objFilename << endl;
     processFile(objHash, objFilename, outputPath, assetObjectPath);
   }
@@ -118,9 +126,18 @@ int processFile(const string& hash, const string& filename, const string& fullDe
     lastFileDirectory = thisDirectory;
   }
 # ifdef _WIN32
-    copyFile(assetPath + hash.substr(0, 2) + "\\" + hash, fullDestination + filename);
+    copyFile(assetPath + "objects\\" + hash.substr(0, 2) + "\\" + hash, fullDestination + filename);
 # else
     copyFile(assetPath + "objects/" +  hash.substr(0, 2) + "/" + hash, fullDestination + filename);
 # endif
+		return 0;
 }
 
+void findAndReplaceString(std::string& subject, const std::string& search, const std::string& replace) {
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos)
+	{
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
+}
